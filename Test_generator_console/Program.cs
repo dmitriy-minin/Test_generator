@@ -3,18 +3,19 @@ using System.Text.Json.Serialization;
 using Test_generator_console.Classes.GPT_classes;
 using System.IO;
 using Test_generator_console.Classes.Word_class;
+using System.Collections;
+using System.Globalization;
 
 namespace Test_generator_console
 {
     internal class Program
     {
         static string apiKey = "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";
-        // адрес api для взаимодействия с чат-ботом
         static string endpoint = "https://api.openai.com/v1/chat/completions";
-        //путь для сохранения .docx-файла
-        static string txtPath = @"C:\Users\minin\OneDrive\Рабочий стол\temp_test.txt";
         //путь для сохранения временного txt-файла с тестами
-        static string savePath = @"C:\Users\minin\OneDrive\Рабочий стол\готовый_тест.docx";
+        static string txtPath = @"C:\Users\minin\OneDrive\Рабочий стол\temp_test.txt";
+        //путь для сохранения .docx-файла
+        static string savePath = @"C:\Users\minin\OneDrive\Рабочий стол\";
 
         static async Task Main(string[] args)
         {
@@ -22,22 +23,31 @@ namespace Test_generator_console
             List<MessageClass> messages = new List<MessageClass>();
             // HttpClient для отправки сообщений
             var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromMinutes(10);
             // устанавливаем отправляемый в запросе токен
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
 
             while (true)
             {
+                repeat:
+                Console.Clear();
                 // ввод сообщения пользователя
                 Console.Write("Введите тему теста: ");
                 var topic = Console.ReadLine();
+                Console.Write("Введите количество вопросов: ");
+                var count = Convert.ToInt32(Console.ReadLine());
 
-                var content = $"сгенерируй тест из 15 вопросов по теме \"{topic}\" с пятью вариантами ответов и отметь правильные ответы без лишних слов " +
+                var content = $"сгенерируй тест из {count} вопросов по теме \"{topic}\" с пятью вариантами ответов и отметь правильные ответы без лишних слов " +
                     $"после каждого вопроса";
-                    
 
                 // если введенное сообщение имеет длину меньше 1 символа
                 // то выходим из цикла и завершаем программу
-                if (content is not { Length: > 0 }) break;
+                if (topic is not { Length: > 0 })
+                {
+                    goto repeat;
+                }
+
+                Console.WriteLine("\nЖдите ответа...\n");
                 // формируем отправляемое сообщение
                 var message = new MessageClass() { Role = "user", Content = content };
                 // добавляем сообщение в список сообщений
@@ -67,21 +77,26 @@ namespace Test_generator_console
                     Console.WriteLine("No choices were returned by the API");
                     continue;
                 }
+
                 var choice = choices[0];
                 var responseMessage = choice.Message;
                 // добавляем полученное сообщение в список сообщений
                 messages.Add(responseMessage);
+
+                ArrayList sms = new ArrayList();
+
                 var responseText = responseMessage.Content.Trim();
 
-                //сохраняем сообщение gpt в txt
-                File.WriteAllText(txtPath, responseText);
+                Console.WriteLine($"ChatGPT: {responseText} \n");
 
-                Console.WriteLine($"ChatGPT: {responseText}");
+                File.WriteAllText(txtPath, responseText); 
+                Console.ReadKey();
 
                 string[] lines = File.ReadAllLines(txtPath);
+                File.Delete(txtPath);
 
-                WordClass.WordTable(txtPath, savePath);
-
+                WordClass.WordTable(lines, savePath, topic, count+1);
+                Console.ReadKey();
             }
         }
     }

@@ -1,21 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using Word = Microsoft.Office.Interop.Word;
+﻿using Word = Microsoft.Office.Interop.Word;
 
 namespace Test_generator_console.Classes.Word_class
 {
     internal class WordClass
     {
-        public static void WordTable(string txtpath, string savePath)
+        public static void WordTable(string[] lines, string savePath, string topic, int questcount)
         {
-            string[] lines = File.ReadAllLines(txtpath); //Массив из всех строк файла
-
-            int count = File.ReadAllLines(txtpath).Length;
-            int questions = 15;
+            int count = lines.Length;
+            int questions = questcount;
 
             Word.Application wordApplication = new Word.Application();  //объявили переменную типа Word
             Object template = Type.Missing;
@@ -37,7 +29,12 @@ namespace Test_generator_console.Classes.Word_class
             tbl.Cell(1, 4).Range.Text = "C";
             tbl.Cell(1, 5).Range.Text = "D";
             tbl.Cell(1, 6).Range.Text = "E";
-            tbl.Cell(1, 7).Range.Text = "Правильный ответ";
+            tbl.Cell(1, 7).Range.Text = "Верный ответ";
+
+            for (int i = 1; i < 8; i++)
+            {
+                tbl.Cell(1, i).Shading.BackgroundPatternColor = Word.WdColor.wdColorLightYellow;
+            }
 
             Word.Border[] borders =
             [
@@ -56,7 +53,7 @@ namespace Test_generator_console.Classes.Word_class
 
             int quest = 0;
             //Заполняет столбцы с вопросами и ответами
-            for (int i = 2; i < questions; i++)
+            for (int i = 2; i < questions+1; i++)
             {
                 for (int j = 1; j < 8; j++)
                 {
@@ -69,11 +66,9 @@ namespace Test_generator_console.Classes.Word_class
                 }
             }
 
-            wordApplication.ActiveDocument.SaveAs(savePath);
+            wordApplication.ActiveDocument.SaveAs(savePath + "Тест по теме " + topic + ".docx");
 
-            File.Delete(txtpath);
-            Console.WriteLine("Готово!");
-            Console.ReadKey();
+            Console.WriteLine("\nГотово! Файл сохранён.");
         }
     }
 }
