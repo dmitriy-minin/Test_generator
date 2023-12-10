@@ -10,12 +10,15 @@ namespace Test_generator_console
 {
     internal class Program
     {
-        static string apiKey = "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";
+        static string apiKey = "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";
         static string endpoint = "https://api.openai.com/v1/chat/completions";
+
         //путь для сохранения временного txt-файла с тестами
         static string txtPath = @"C:\Users\minin\OneDrive\Рабочий стол\temp_test.txt";
+
         //путь для сохранения .docx-файла
         static string savePath = @"C:\Users\minin\OneDrive\Рабочий стол\";
+
 
         static async Task Main(string[] args)
         {
@@ -31,7 +34,7 @@ namespace Test_generator_console
             {
                 repeat:
                 Console.Clear();
-                // ввод сообщения пользователя
+                // ввод параметров пользователем
                 Console.Write("Введите тему теста: ");
                 var topic = Console.ReadLine();
                 Console.Write("Введите количество вопросов: ");
@@ -41,7 +44,7 @@ namespace Test_generator_console
                     $"после каждого вопроса";
 
                 // если введенное сообщение имеет длину меньше 1 символа
-                // то выходим из цикла и завершаем программу
+                // то откатываем программу в начало
                 if (topic is not { Length: > 0 })
                 {
                     goto repeat;
@@ -83,7 +86,7 @@ namespace Test_generator_console
                 // добавляем полученное сообщение в список сообщений
                 messages.Add(responseMessage);
 
-                ArrayList sms = new ArrayList();
+                //ArrayList sms = new ArrayList();
 
                 var responseText = responseMessage.Content.Trim();
 
